@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealDesk AI — M&A Due Diligence Powered by 5 AI Agents</title>
+  <style>
+    :root {
+      --navy:   #0A0F1E;
+      --navy2:  #0F1628;
+      --navy3:  #151d35;
+      --gold:   #C9A84C;
+      --gold2:  #e8c46a;
+      --blue:   #2563EB;
+      --blue2:  #3b82f6;
+      --text:   #F0F4FF;
+      --muted:  #8A9BC0;
+      --green:  #10B981;
+      --red:    #EF4444;
+      --border: rgba(201,168,76,0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10,15,30,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 700; color: var(--gold); letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-badge {
+      background: var(--gold); color: var(--navy);
+      font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem;
+      border-radius: 20px; letter-spacing: 0.5px;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 6rem 2rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 10%; right: 10%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      border: 1px solid var(--border);
+      color: var(--gold); font-size: 0.75rem; font-weight: 600;
+      padding: 0.35rem 1rem; border-radius: 20px; letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800; letter-spacing: -2px; line-height: 1.05;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero p {
+      font-size: 1.25rem; color: var(--muted); max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--gold); color: var(--navy);
+      font-weight: 700; padding: 0.85rem 2rem;
+      border-radius: 8px; text-decoration: none; font-size: 0.95rem;
+      transition: transform .2s, box-shadow .2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
+    .btn-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid rgba(240,244,255,0.2);
+      font-weight: 600; padding: 0.85rem 2rem;
+      border-radius: 8px; text-decoration: none; font-size: 0.95rem;
+      transition: border-color .2s, background .2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-secondary:hover { border-color: var(--muted); background: rgba(255,255,255,0.05); }
+    .hero-stats {
+      display: flex; gap: 3rem; justify-content: center; margin-top: 4rem;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2.5rem; font-weight: 800; color: var(--gold); line-height: 1; }
+    .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem; }
+
+    /* SECTION */
+    section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+    .divider { width: 60px; height: 2px; background: var(--gold); margin: 1.5rem 0 3rem; }
+
+    /* PROBLEM */
+    .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .problem-card {
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem;
+    }
+    .problem-num { font-size: 0.75rem; color: var(--red); font-weight: 700; letter-spacing: 1px; margin-bottom: 0.75rem; }
+    .problem-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .problem-card p { color: var(--muted); font-size: 0.95rem; }
+
+    /* PIPELINE */
+    .pipeline-wrap { overflow-x: auto; padding-bottom: 1rem; }
+    .pipeline {
+      display: flex; align-items: stretch; gap: 0; min-width: 700px;
+      position: relative;
+    }
+    .agent-card {
+      flex: 1; background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 1.25rem; text-align: center;
+      position: relative; transition: transform .2s, border-color .2s;
+    }
+    .agent-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+    .agent-card.human { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+    .agent-arrow {
+      display: flex; align-items: center; padding: 0 0.5rem;
+      color: var(--gold); font-size: 1.2rem; flex-shrink: 0;
+    }
+    .agent-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+    .agent-name { font-size: 0.8rem; font-weight: 700; color: var(--blue2); margin-bottom: 0.5rem; }
+    .agent-role { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+    .agent-badge {
+      display: inline-block; font-size: 0.65rem; font-weight: 700;
+      padding: 0.2rem 0.5rem; border-radius: 4px; margin-top: 0.75rem;
+      background: rgba(201,168,76,0.15); color: var(--gold); letter-spacing: 0.5px;
+    }
+    .agent-card.human .agent-badge { background: var(--gold); color: var(--navy); }
+
+    /* HOW IT WORKS */
+    .steps { display: flex; flex-direction: column; gap: 1.5rem; }
+    .step { display: flex; gap: 1.5rem; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      background: var(--gold); color: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+    }
+    .step-content h3 { font-size: 1.05rem; margin-bottom: 0.25rem; }
+    .step-content p { color: var(--muted); font-size: 0.9rem; }
+    code {
+      background: rgba(37,99,235,0.15); color: var(--blue2);
+      padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.85em;
+      font-family: 'Fira Code', 'Courier New', monospace;
+    }
+
+    /* TECH */
+    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+    .tech-card {
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem; text-align: center;
+    }
+    .tech-layer { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .tech-name { font-size: 1.3rem; font-weight: 700; color: var(--gold); margin-bottom: 0.75rem; }
+    .tech-details { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* BAND SECTION */
+    .band-section {
+      background: var(--navy2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 3rem; margin-top: 2rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+    }
+    .band-section h2 { font-size: 1.8rem; }
+    .band-points { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+    .band-points li { display: flex; gap: 0.75rem; color: var(--muted); font-size: 0.95rem; }
+    .band-points li::before { content: '→'; color: var(--gold); flex-shrink: 0; }
+    .chat-mockup {
+      background: var(--navy); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem; font-size: 0.82rem;
+    }
+    .chat-header { color: var(--muted); font-size: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .chat-msg { margin-bottom: 0.85rem; }
+    .chat-agent { font-weight: 700; margin-bottom: 0.2rem; }
+    .chat-agent.research { color: #60a5fa; }
+    .chat-agent.risk { color: #f87171; }
+    .chat-agent.valuation { color: #34d399; }
+    .chat-agent.writer { color: #a78bfa; }
+    .chat-agent.human { color: var(--gold); }
+    .chat-text { color: var(--muted); line-height: 1.5; }
+    .chat-approved { color: var(--green); font-weight: 600; }
+
+    /* CTA FINAL */
+    .cta-section {
+      text-align: center; padding: 6rem 2rem;
+      background: linear-gradient(180deg, transparent, rgba(37,99,235,0.05));
+    }
+    .cta-section h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+    .cta-section p { color: var(--muted); font-size: 1.1rem; margin-bottom: 2.5rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .band-section { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">DealDesk <span style="color:var(--blue)">AI</span></div>
+  <div class="nav-links">
+    <a href="#pipeline">Pipeline</a>
+    <a href="#how">How it works</a>
+    <a href="#tech">Tech</a>
+    <a href="https://github.com/jhontejada95/dealdesk_ai">GitHub</a>
+  </div>
+  <span class="nav-badge">Band of Agents Hackathon</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">⚡ Multi-Agent · Real-Time · Human in the Loop</div>
+  <h1>Deal<span>Desk</span> AI</h1>
+  <p>5 specialized AI agents that collaborate in real time to produce investment-grade M&A due diligence — in minutes, not weeks.</p>
+  <div class="hero-cta">
+    <a href="https://github.com/jhontejada95/dealdesk_ai" class="btn-primary">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      Clone on GitHub
+    </a>
+    <a href="#pipeline" class="btn-secondary">See how it works ↓</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">AI Agents</div></div>
+    <div class="stat"><div class="stat-num">&lt;5m</div><div class="stat-label">Time to Memo</div></div>
+    <div class="stat"><div class="stat-num">1</div><div class="stat-label">Human Gate</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Orchestration Servers</div></div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section>
+  <div class="section-label">The Problem</div>
+  <h2>Due diligence takes weeks.<br>Deals move in days.</h2>
+  <div class="divider"></div>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-num">01 — TIME</div>
+      <h3>4–8 weeks per deal</h3>
+      <p>Traditional M&A due diligence requires 5–15 analysts and takes weeks — by which time the opportunity may be gone.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">02 — COST</div>
+      <h3>$50K–$500K in fees</h3>
+      <p>Advisory firms charge a premium for the research, analysis, and memo writing that AI can now do in minutes.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">03 — SIGNAL/NOISE</div>
+      <h3>80% gathering, 20% thinking</h3>
+      <p>Analysts spend most of their time aggregating data — not on the judgment calls that actually matter for the deal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-label">The Solution</div>
+  <h2>5 specialized agents.<br>One chat room. One memo.</h2>
+  <div class="divider"></div>
+  <div class="pipeline-wrap">
+    <div class="pipeline">
+      <div class="agent-card">
+        <span class="agent-icon">🔍</span>
+        <div class="agent-name">@Research</div>
+        <div class="agent-role">Analyzes business model, team, market, financials & competitors</div>
+        <span class="agent-badge">STEP 01</span>
+      </div>
+      <div class="agent-arrow">→</div>
+      <div class="agent-card">
+        <span class="agent-icon">⚠️</span>
+        <div class="agent-name">@Risk</div>
+        <div class="agent-role">Identifies business, team, financial & regulatory risks. Scores LOW / MED / HIGH</div>
+        <span class="agent-badge">STEP 02</span>
+      </div>
+      <div class="agent-arrow">→</div>
+      <div class="agent-card">
+        <span class="agent-icon">💰</span>
+        <div class="agent-name">@Valuation</div>
+        <div class="agent-role">Estimates valuation range using revenue multiples & comparable transactions</div>
+        <span class="agent-badge">STEP 03</span>
+      </div>
+      <div class="agent-arrow">→</div>
+      <div class="agent-card">
+        <span class="agent-icon">📝</span>
+        <div class="agent-name">@Writer</div>
+        <div class="agent-role">Synthesizes all inputs into a VC/PE-grade investment memo</div>
+        <span class="agent-badge">STEP 04</span>
+      </div>
+      <div class="agent-arrow">→</div>
+      <div class="agent-card human">
+        <span class="agent-icon">👤</span>
+        <div class="agent-name">@HumanReview</div>
+        <div class="agent-role">Human reads the memo and issues the final verdict</div>
+        <span class="agent-badge">APPROVE / REJECT</span>
+      </div>
+    </div>
+  </div>
+  <p style="color:var(--muted); font-size:0.85rem; margin-top:1rem; text-align:center;">
+    Each agent posts its output to a Band chat room and @mentions the next — creating a live, auditable conversation.
+  </p>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">How It Works</div>
+  <h2>From company name<br>to investment decision.</h2>
+  <div class="divider"></div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Enter a company name and context</h3>
+        <p>Run <code>python main.py</code> or open the dashboard. Type the target company and any context you have — funding stage, sector, recent news.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>5 agents coordinate through Band</h3>
+        <p>Each agent authenticates with its own <code>band_a_...</code> key. They post to a shared chat room and @mention the next agent — no orchestration server needed.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Watch the pipeline in Band's UI</h3>
+        <p>Open the chat room in <a href="https://app.band.ai" style="color:var(--blue2)">app.band.ai</a> and watch the agents appear in real time, each @mentioning the next. Full audit trail by default.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Human reviewer approves the memo</h3>
+        <p>@HumanReview presents the final investment memo. The human decides: <strong>APPROVE</strong>, <strong>REJECT</strong>, or <strong>REQUEST CHANGES</strong>. No memo ships without a human decision.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY BAND -->
+<section>
+  <div class="band-section">
+    <div>
+      <div class="section-label">Why Band?</div>
+      <h2>Multi-agent coordination through conversation.</h2>
+      <ul class="band-points">
+        <li>Each agent authenticates with its own Agent API key — no shared credentials</li>
+        <li>Agents @mention the next — no message broker, no queue, no orchestration server needed</li>
+        <li>The full pipeline is visible in the Band chat UI — transparent and auditable by design</li>
+        <li>Sibling agents can be added as participants in any chat room without a contact relationship</li>
+      </ul>
+    </div>
+    <div class="chat-mockup">
+      <div class="chat-header"># dealdesk-stripe · 5 agents · live</div>
+      <div class="chat-msg">
+        <div class="chat-agent research">DealDesk Research 10:42:01</div>
+        <div class="chat-text">Stripe analysis complete. Revenue $14.4B, YoY 25%. @Risk please proceed.</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-agent risk">DealDesk Risk 10:42:18</div>
+        <div class="chat-text">Risk score: MEDIUM. Payment regulation exposure. @Valuation proceed.</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-agent valuation">DealDesk Valuation 10:42:35</div>
+        <div class="chat-text">Range: $95B–$115B. P/S 6.6–8.0x. @Writer draft memo.</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-agent writer">DealDesk Writer 10:42:52</div>
+        <div class="chat-text">Investment memo ready. 4-page VC-grade. @HumanReview please review.</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-agent human">DealDesk HumanReview 10:43:15</div>
+        <div class="chat-text chat-approved">✅ APPROVED — Proceeding to term sheet.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="tech">
+  <div class="section-label">Tech Stack</div>
+  <h2>Built on best-in-class<br>open infrastructure.</h2>
+  <div class="divider"></div>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-layer">Multi-Agent Layer</div>
+      <div class="tech-name">Band</div>
+      <div class="tech-details">Agent API · <code>band_a_...</code> keys<br>Real-time chat coordination<br>@mention routing</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-layer">LLM Provider</div>
+      <div class="tech-name">Featherless AI</div>
+      <div class="tech-details">Qwen/Qwen2.5-72B-Instruct<br>OpenAI-compatible endpoint<br>72B parameter model</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-layer">Runtime</div>
+      <div class="tech-name">Python</div>
+      <div class="tech-details">3.10+ · 4 dependencies<br>Runs anywhere<br><code>pip install &amp;&amp; python main.py</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>From company name<br>to investment decision.</h2>
+  <p>Open source. 4 dependencies. Runs in 5 minutes.</p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="https://github.com/jhontejada95/dealdesk_ai" class="btn-primary">
+      View on GitHub →
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built by <a href="https://github.com/jhontejada95">Jhon Tejada</a> for the <strong>Band of Agents Hackathon</strong> · June 2026</p>
+  <p style="margin-top:0.5rem;">Powered by <a href="https://band.ai">Band</a> · <a href="https://featherless.ai">Featherless AI</a></p>
+</footer>
+
+</body>
+</html>

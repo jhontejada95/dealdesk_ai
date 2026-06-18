@@ -43,7 +43,7 @@ def save_report(company: str, memo: str, verdict: str, chat_id: str, transcript:
         "human_verdict": verdict,
         "agent_transcript": transcript,
     }
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     print(f"\n📄 Report saved → {filename}")
@@ -111,4 +111,4 @@ def run_dealdesk():
 
 
 if __name__ == "__main__":
-    run_dealdesk()
+ 
