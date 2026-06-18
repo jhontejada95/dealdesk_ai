@@ -23,6 +23,7 @@ from agents import (
     agent_writer,
     agent_human_review,
 )
+from pendo_track import track_event
 
 # Pipeline order for @mention routing
 PIPELINE = ["@Research", "@Risk", "@Valuation", "@Writer", "@HumanReview"]
@@ -45,6 +46,15 @@ def save_report(company: str, memo: str, verdict: str, chat_id: str, transcript:
     }
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
+
+    track_event("due_diligence_report_saved", {
+        "company": company,
+        "filename": filename,
+        "verdict": verdict[:80],
+        "chat_id": chat_id,
+        "transcript_length": len(transcript),
+        "timestamp": timestamp,
+    })
 
     print(f"\n📄 Report saved → {filename}")
     return filename
@@ -72,6 +82,13 @@ def run_dealdesk():
             break
         lines.append(line)
     context = "\n".join(lines).strip() or "No additional context provided."
+
+    track_event("cli_analysis_started", {
+        "company": company,
+        "has_context": context != "No additional context provided.",
+        "context_length": len(context),
+        "band_online": band_online,
+    })
 
     # ── Create Band chat room with all 5 agents ───────────────
     chat_id = create_chat(f"DealDesk AI — {company} Due Diligence")
@@ -102,6 +119,14 @@ def run_dealdesk():
     # ── Save & summarize ─────────────────────────────────────
     filename = save_report(company, memo, verdict, chat_id, transcript)
 
+    track_event("full_pipeline_completed", {
+        "company": company,
+        "verdict": verdict[:80],
+        "chat_id": chat_id,
+        "total_agents_completed": 5,
+        "report_filename": filename,
+    })
+
     print("\n" + "=" * 60)
     print(f"✅ Done — {company}")
     print(f"   Verdict  : {verdict[:80]}")
@@ -111,4 +136,4 @@ def run_dealdesk():
 
 
 if __name__ == "__main__":
- 
+    run_dealdesk()

@@ -4,6 +4,7 @@ Each agent runs its analysis and posts results to the Band room via the log call
 """
 
 from llm import call_llm
+from pendo_track import track_event
 
 
 # ─── AGENT 1: RESEARCH ───────────────────────────────────────────────────────
@@ -22,6 +23,11 @@ Be factual, concise, and flag data gaps clearly. Output in markdown."""
 def agent_research(company: str, context: str, log) -> str:
     print(f"\n🔍 @Research analyzing {company}...")
     result = call_llm(RESEARCH_SYSTEM, f"Company: {company}\n\nContext:\n{context}")
+    track_event("research_analysis_completed", {
+        "company": company,
+        "output_length": len(result),
+        "agent_name": "Research",
+    })
     log("@Research", result, mention_next="@Risk")
     return result
 
@@ -42,6 +48,10 @@ Be critical. Output in markdown."""
 def agent_risk(research: str, log) -> str:
     print("\n⚠️  @Risk evaluating red flags...")
     result = call_llm(RISK_SYSTEM, f"Research brief:\n\n{research}")
+    track_event("risk_assessment_completed", {
+        "output_length": len(result),
+        "agent_name": "Risk",
+    })
     log("@Risk", result, mention_next="@Valuation")
     return result
 
@@ -68,6 +78,10 @@ def agent_valuation(research: str, risk: str, log) -> str:
     print("\n💰 @Valuation building model...")
     prompt = f"Research:\n{research}\n\nRisk assessment:\n{risk}"
     result = call_llm(VALUATION_SYSTEM, prompt)
+    track_event("valuation_analysis_completed", {
+        "output_length": len(result),
+        "agent_name": "Valuation",
+    })
     log("@Valuation", result, mention_next="@Writer")
     return result
 
@@ -100,6 +114,11 @@ def agent_writer(company: str, research: str, risk: str, valuation: str, log) ->
         f"Valuation:\n{valuation}"
     )
     result = call_llm(WRITER_SYSTEM, prompt, max_tokens=2048)
+    track_event("investment_memo_generated", {
+        "company": company,
+        "memo_length": len(result),
+        "agent_name": "Writer",
+    })
     log("@Writer", result, mention_next="@HumanReview")
     return result
 
@@ -126,4 +145,13 @@ def agent_human_review(memo: str, log) -> str:
         changes = input("Changes needed: ").strip()
         verdict = f"🔄 CHANGES REQUESTED — {changes}"
     else:
-        verd
+        verdict = "⏭ SKIPPED — No valid option selected."
+
+    verdict_type = {"A": "APPROVED", "R": "REJECTED", "M": "CHANGES_REQUESTED"}.get(decision, "SKIPPED")
+    track_event("cli_human_review_verdict_submitted", {
+        "verdict": verdict_type,
+        "has_reason": decision in ("R", "M"),
+    })
+
+    log("@HumanReview", verdict)
+    return verdict

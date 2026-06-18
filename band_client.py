@@ -9,6 +9,7 @@ Auth:      X-API-Key: band_a_...   (one key per agent)
 import hashlib
 import time
 import requests
+from pendo_track import track_event
 from config import (
     BAND_RESEARCH_KEY, BAND_RISK_KEY, BAND_VALUATION_KEY,
     BAND_WRITER_KEY, BAND_HUMANREVIEW_KEY,
@@ -62,6 +63,12 @@ def create_chat(title: str, creator: str = "@Research") -> str:
     chat_id = resp.json()["data"]["id"]
     print(f"[Band] ✅ Chat room created: {chat_id}")
     _add_all_participants(chat_id, creator)
+    track_event("band_chat_room_created", {
+        "chat_id": chat_id,
+        "title": title,
+        "band_online": True,
+        "is_fallback": False,
+    })
     return chat_id
 
 
@@ -122,5 +129,12 @@ def verify_connection() -> bool:
 
 def _fallback_chat_id(title: str) -> str:
     session_id = hashlib.md5(f"{title}{time.time()}".encode()).hexdigest()[:12]
+    chat_id = f"local-{session_id}"
     print(f"[Band] Running offline. Session ID: {session_id}")
-    return f"local-{session_id}"
+    track_event("band_chat_room_created", {
+        "chat_id": chat_id,
+        "title": title,
+        "band_online": False,
+        "is_fallback": True,
+    })
+    return chat_id
