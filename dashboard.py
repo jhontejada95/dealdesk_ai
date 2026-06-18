@@ -15,6 +15,7 @@ from flask import Flask, render_template_string, request, Response, jsonify
 sys.path.insert(0, os.path.dirname(__file__))
 from band_client import create_chat, send_message, verify_connection
 from agents import agent_research, agent_risk, agent_valuation, agent_writer
+from pendo_track import track_event
 
 app = Flask(__name__)
 _queue = None
@@ -662,8 +663,15 @@ def run_analysis():
     q = _queue
 
     def pipeline():
+        last_step = "init"
         try:
             band_online = verify_connection()
+            track_event("analysis_pipeline_started", {
+                "company": company,
+                "has_context": context != "No additional context.",
+                "context_length": len(context),
+                "band_online": band_online,
+            })
             chat_id = create_chat(f"DealDesk AI — {company} Due Diligence")
             global _band_chat_id
             _band_chat_id = chat_id
@@ -680,22 +688,31 @@ def run_analysis():
             q.put({"type": "step", "agent": "@Research", "status": "running"})
             research = agent_research(company, context, log)
             q.put({"type": "step", "agent": "@Research", "status": "done"})
+            last_step = "Research"
 
             q.put({"type": "step", "agent": "@Risk", "status": "running"})
             risk = agent_risk(research, log)
             q.put({"type": "step", "agent": "@Risk", "status": "done"})
+            last_step = "Risk"
 
             q.put({"type": "step", "agent": "@Valuation", "status": "running"})
             valuation = agent_valuation(research, risk, log)
             q.put({"type": "step", "agent": "@Valuation", "status": "done"})
+            last_step = "Valuation"
 
             q.put({"type": "step", "agent": "@Writer", "status": "running"})
             memo = agent_writer(company, research, risk, valuation, log)
             q.put({"type": "step", "agent": "@Writer", "status": "done"})
+            last_step = "Writer"
 
             q.put({"type": "memo", "content": memo, "chat_id": chat_id})
 
         except Exception as e:
+            track_event("pipeline_error_occurred", {
+                "error_message": str(e)[:200],
+                "company": company,
+                "last_completed_step": last_step,
+            })
             q.put({"type": "error", "msg": str(e)})
         finally:
             q.put(None)
@@ -729,7 +746,12 @@ def stream():
 @app.route("/api/verdict", methods=["POST"])
 def verdict():
     data = request.json
-    return jsonify({"status": "ok", "verdict": data.get("verdict", "PENDING")})
+    verdict_value = data.get("verdict", "PENDING")
+    track_event("human_review_verdict_submitted", {
+        "verdict": verdict_value,
+        "chat_id": _band_chat_id or "",
+    })
+    return jsonify({"status": "ok", "verdict": verdict_value})
 
 
 if __name__ == "__main__":
