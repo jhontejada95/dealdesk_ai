@@ -27,159 +27,410 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>DealDesk AI — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 :root{
-  --navy:#0A0F1E; --navy2:#0F1628; --navy3:#151d35;
-  --gold:#C9A84C; --gold2:#e8c46a;
-  --blue:#2563EB; --blue2:#3b82f6;
-  --text:#F0F4FF; --muted:#8A9BC0;
-  --green:#10B981; --red:#EF4444;
-  --border:rgba(201,168,76,0.2);
+  --navy:#03070f;
+  --navy2:#080d1a;
+  --gold:#C9A84C;
+  --gold2:#e8c46a;
+  --blue:#2563EB;
+  --blue2:#3b82f6;
+  --text:#F0F4FF;
+  --muted:#6b7fa3;
+  --green:#10B981;
+  --red:#EF4444;
+  --amber:#F59E0B;
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --gold-border:rgba(201,168,76,0.25);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--navy);color:var(--text);font-family:'Inter',-apple-system,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+body{
+  background:var(--navy);
+  color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow:hidden;
+  position:relative;
+}
 
-/* HEADER */
+/* ── BACKGROUND ORBS ─────────────────────────────────── */
+.orb{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:0;
+  filter:blur(100px);opacity:.55;
+}
+.orb1{width:600px;height:600px;top:-200px;left:-150px;
+  background:radial-gradient(circle,rgba(201,168,76,.22) 0%,transparent 70%);
+  animation:floatOrb 18s ease-in-out infinite;}
+.orb2{width:500px;height:500px;bottom:-180px;right:-120px;
+  background:radial-gradient(circle,rgba(37,99,235,.25) 0%,transparent 70%);
+  animation:floatOrb 22s ease-in-out infinite reverse;}
+.orb3{width:350px;height:350px;top:40%;right:30%;
+  background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%);
+  animation:floatOrb 26s ease-in-out infinite 4s;}
+@keyframes floatOrb{
+  0%,100%{transform:translate(0,0);}
+  33%{transform:translate(30px,-20px);}
+  66%{transform:translate(-20px,25px);}
+}
+
+/* ── GRID OVERLAY ────────────────────────────────────── */
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(201,168,76,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
 header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.85rem 1.5rem;
-  background:var(--navy2);border-bottom:1px solid var(--border);
+  position:relative;z-index:10;
+  display:flex;align-items:center;gap:1.5rem;
+  padding:.9rem 1.75rem;
+  background:rgba(3,7,15,.7);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--glass-border);
   flex-shrink:0;
 }
-.logo{font-size:1.1rem;font-weight:800;color:var(--gold);}
-.logo span{color:var(--blue2);}
-#band-link{font-size:.8rem;color:var(--muted);text-decoration:none;}
-#band-link:hover{color:var(--text);}
-#status-bar{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+.logo{
+  font-size:1.15rem;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.logo-ai{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.header-tag{
+  font-family:'Fira Code',monospace;font-size:.65rem;
+  color:var(--muted);letter-spacing:.08em;
+  background:var(--glass);border:1px solid var(--glass-border);
+  padding:.2rem .6rem;border-radius:4px;
+}
+.header-right{display:flex;align-items:center;gap:1.25rem;margin-left:auto;}
+#status-bar{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.75rem;color:var(--muted);
+}
+.status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+#band-link{
+  font-size:.75rem;color:var(--muted);text-decoration:none;
+  font-family:'Fira Code',monospace;
+  transition:color .2s;
+}
+#band-link:hover{color:var(--gold);}
 
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:320px 1fr;flex:1;overflow:hidden;}
+/* ── LAYOUT ─────────────────────────────────────────── */
+.layout{
+  position:relative;z-index:5;
+  display:grid;grid-template-columns:310px 1fr;
+  flex:1;overflow:hidden;
+}
 
-/* LEFT PANEL */
+/* ── LEFT PANEL ─────────────────────────────────────── */
 .left{
-  background:var(--navy2);border-right:1px solid var(--border);
+  background:rgba(8,13,26,.6);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-right:1px solid var(--glass-border);
   display:flex;flex-direction:column;overflow-y:auto;
 }
-.panel-section{padding:1.25rem;border-bottom:1px solid var(--border);}
-.panel-label{font-size:.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem;}
+.left::-webkit-scrollbar{width:3px;}
+.left::-webkit-scrollbar-thumb{background:var(--gold-border);border-radius:2px;}
+.panel-section{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.05);}
+.panel-label{
+  font-size:.65rem;font-weight:700;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.12em;
+  margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;
+}
+.panel-label::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,var(--gold-border),transparent);
+}
+label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:.4rem;}
 input,textarea{
-  width:100%;background:var(--navy3);border:1px solid var(--border);
-  color:var(--text);border-radius:8px;padding:.65rem .85rem;
-  font-size:.88rem;font-family:inherit;resize:none;
-  transition:border-color .2s;
+  width:100%;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--text);border-radius:10px;
+  padding:.7rem .95rem;
+  font-size:.85rem;font-family:inherit;resize:none;
+  transition:border-color .25s,background .25s;
 }
-input:focus,textarea:focus{outline:none;border-color:var(--gold);}
-textarea{height:90px;margin-top:.6rem;}
-label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:.35rem;}
-.btn-run{
-  width:100%;margin-top:.85rem;padding:.75rem;
-  background:var(--gold);color:var(--navy);
-  font-weight:700;font-size:.9rem;border:none;
-  border-radius:8px;cursor:pointer;transition:opacity .2s;
+input::placeholder,textarea::placeholder{color:rgba(107,127,163,.6);}
+input:focus,textarea:focus{
+  outline:none;
+  border-color:var(--gold);
+  background:rgba(201,168,76,.05);
 }
-.btn-run:hover{opacity:.9;}
-.btn-run:disabled{opacity:.4;cursor:not-allowed;}
+textarea{height:95px;margin-top:.6rem;}
 
-/* PIPELINE STEPS */
-.pipeline{display:flex;flex-direction:column;gap:.5rem;}
-.step{
-  display:flex;align-items:center;gap:.75rem;
-  padding:.65rem .85rem;border-radius:8px;
-  border:1px solid transparent;
-  transition:all .3s;
+.btn-run{
+  width:100%;margin-top:1rem;padding:.8rem;
+  background:linear-gradient(135deg,var(--gold),#b8932e);
+  color:#03070f;
+  font-weight:700;font-size:.875rem;
+  border:none;border-radius:10px;cursor:pointer;
+  letter-spacing:.03em;
+  box-shadow:0 4px 20px rgba(201,168,76,.25);
+  transition:all .25s;
+  position:relative;overflow:hidden;
 }
-.step.waiting{color:var(--muted);}
-.step.running{border-color:var(--gold);background:rgba(201,168,76,.07);color:var(--text);}
-.step.done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.05);color:var(--green);}
-.step-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
-.step-name{font-size:.85rem;font-weight:600;}
-.step-status{margin-left:auto;font-size:.7rem;}
-.spinner{display:inline-block;width:10px;height:10px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;}
+.btn-run::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  opacity:0;transition:opacity .25s;
+}
+.btn-run:hover:not(:disabled)::after{opacity:1;}
+.btn-run:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 28px rgba(201,168,76,.35);}
+.btn-run:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* ── PIPELINE STEPS ─────────────────────────────────── */
+.pipeline{display:flex;flex-direction:column;gap:.4rem;}
+.step{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.65rem .9rem;border-radius:10px;
+  border:1px solid transparent;
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  cursor:default;
+}
+.step.waiting{
+  color:var(--muted);
+  background:transparent;
+}
+.step.running{
+  border-color:var(--gold-border);
+  background:rgba(201,168,76,.08);
+  color:var(--text);
+  box-shadow:0 0 20px rgba(201,168,76,.08);
+}
+.step.done{
+  border-color:rgba(16,185,129,.25);
+  background:rgba(16,185,129,.06);
+  color:var(--green);
+}
+.step-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
+.step-name{font-size:.82rem;font-weight:600;font-family:'Inter',sans-serif;}
+.step-status{margin-left:auto;font-size:.7rem;font-family:'Fira Code',monospace;}
+.spinner{
+  display:inline-block;width:11px;height:11px;
+  border:2px solid rgba(201,168,76,.3);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .75s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* RIGHT PANEL */
-.right{display:flex;flex-direction:column;overflow:hidden;}
-.feed{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;}
-.agent-msg{
-  background:var(--navy2);border:1px solid var(--border);
-  border-radius:10px;padding:1rem 1.25rem;animation:fadeIn .3s ease;
+/* ── RIGHT PANEL ─────────────────────────────────────── */
+.right{display:flex;flex-direction:column;overflow:hidden;background:transparent;}
+
+.feed{
+  flex:1;overflow-y:auto;
+  padding:1.5rem;
+  display:flex;flex-direction:column;gap:1rem;
 }
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.msg-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;}
-.msg-agent{font-size:.8rem;font-weight:700;}
+.feed::-webkit-scrollbar{width:3px;}
+.feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+
+/* ── AGENT MESSAGE CARDS ─────────────────────────────── */
+.agent-msg{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;
+  padding:1.1rem 1.35rem;
+  backdrop-filter:blur(8px);
+  animation:fadeSlide .35s cubic-bezier(.4,0,.2,1);
+  transition:border-color .2s;
+}
+.agent-msg:hover{border-color:rgba(255,255,255,.12);}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+/* colored left border per agent */
+.agent-msg.research{border-left:3px solid #60a5fa;}
+.agent-msg.risk{border-left:3px solid #f87171;}
+.agent-msg.valuation{border-left:3px solid #34d399;}
+.agent-msg.writer{border-left:3px solid #a78bfa;}
+.agent-msg.humanreview{border-left:3px solid var(--gold);}
+
+.msg-header{display:flex;align-items:center;gap:.65rem;margin-bottom:.7rem;}
+.agent-avatar{
+  width:26px;height:26px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;font-weight:700;
+  font-family:'Fira Code',monospace;
+}
+.avatar-research{background:rgba(96,165,250,.15);color:#60a5fa;}
+.avatar-risk{background:rgba(248,113,113,.15);color:#f87171;}
+.avatar-valuation{background:rgba(52,211,153,.15);color:#34d399;}
+.avatar-writer{background:rgba(167,139,250,.15);color:#a78bfa;}
+.avatar-humanreview{background:rgba(201,168,76,.15);color:var(--gold);}
+
+.msg-agent{font-size:.78rem;font-weight:700;font-family:'Fira Code',monospace;}
 .msg-agent.research{color:#60a5fa;}
 .msg-agent.risk{color:#f87171;}
 .msg-agent.valuation{color:#34d399;}
 .msg-agent.writer{color:#a78bfa;}
 .msg-agent.humanreview{color:var(--gold);}
-.msg-time{font-size:.7rem;color:var(--muted);margin-left:auto;}
-.msg-body{font-size:.85rem;color:var(--muted);line-height:1.7;}
-.msg-body h1,.msg-body h2,.msg-body h3{color:var(--text);margin:.75rem 0 .35rem;}
-.msg-body h1{font-size:1.1rem;}
-.msg-body h2{font-size:1rem;}
-.msg-body h3{font-size:.9rem;color:var(--gold);}
+.msg-time{font-size:.68rem;color:var(--muted);margin-left:auto;font-family:'Fira Code',monospace;}
+.msg-body{font-size:.84rem;color:rgba(240,244,255,.75);line-height:1.75;}
+.msg-body h1,.msg-body h2,.msg-body h3{color:var(--text);margin:.8rem 0 .4rem;}
+.msg-body h1{font-size:1.05rem;color:var(--text);}
+.msg-body h2{font-size:.95rem;color:var(--text);}
+.msg-body h3{font-size:.88rem;color:var(--gold);}
 .msg-body p{margin-bottom:.5rem;}
-.msg-body ul,.msg-body ol{padding-left:1.25rem;margin-bottom:.5rem;}
-.msg-body li{margin-bottom:.2rem;}
+.msg-body ul,.msg-body ol{padding-left:1.35rem;margin-bottom:.5rem;}
+.msg-body li{margin-bottom:.25rem;}
 .msg-body strong{color:var(--text);}
-.msg-body code{background:rgba(37,99,235,.15);color:var(--blue2);padding:.1rem .35rem;border-radius:4px;font-size:.8em;}
+.msg-body em{color:var(--muted);}
+.msg-body code{
+  background:rgba(37,99,235,.15);color:#93c5fd;
+  padding:.15rem .4rem;border-radius:5px;
+  font-size:.78em;font-family:'Fira Code',monospace;
+}
+.msg-body blockquote{
+  border-left:2px solid var(--gold-border);
+  padding-left:.85rem;color:var(--muted);
+  margin:.5rem 0;
+}
+.msg-body hr{border:none;border-top:1px solid rgba(255,255,255,.06);margin:.75rem 0;}
 
-/* HUMAN REVIEW */
+/* ── HUMAN REVIEW BAR ───────────────────────────────── */
 .review-bar{
-  padding:1rem 1.5rem;background:var(--navy2);
-  border-top:1px solid var(--border);
-  display:none;align-items:center;gap:1rem;flex-shrink:0;
+  position:relative;z-index:10;
+  padding:1rem 1.75rem;
+  background:rgba(3,7,15,.85);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--gold-border);
+  display:none;align-items:center;gap:.85rem;flex-shrink:0;
+  box-shadow:0 -8px 40px rgba(201,168,76,.08);
 }
 .review-bar.visible{display:flex;}
-.review-label{font-size:.85rem;color:var(--text);font-weight:600;margin-right:.5rem;}
+.review-label{
+  font-size:.8rem;font-weight:600;color:var(--text);
+  margin-right:.25rem;display:flex;align-items:center;gap:.5rem;
+}
+.review-label::before{
+  content:'';display:inline-block;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 8px var(--gold);
+  animation:pulse-dot 1.5s ease-in-out infinite;
+}
 .btn-approve{
-  background:var(--green);color:#fff;font-weight:700;
-  border:none;padding:.6rem 1.5rem;border-radius:8px;cursor:pointer;font-size:.85rem;
+  background:linear-gradient(135deg,#059669,#10B981);
+  color:#fff;font-weight:700;
+  border:none;padding:.6rem 1.35rem;border-radius:9px;
+  cursor:pointer;font-size:.82rem;letter-spacing:.02em;
+  box-shadow:0 3px 14px rgba(16,185,129,.3);
+  transition:all .2s;
 }
+.btn-approve:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(16,185,129,.4);}
 .btn-reject{
-  background:var(--red);color:#fff;font-weight:700;
-  border:none;padding:.6rem 1.5rem;border-radius:8px;cursor:pointer;font-size:.85rem;
+  background:linear-gradient(135deg,#dc2626,#EF4444);
+  color:#fff;font-weight:700;
+  border:none;padding:.6rem 1.35rem;border-radius:9px;
+  cursor:pointer;font-size:.82rem;letter-spacing:.02em;
+  box-shadow:0 3px 14px rgba(239,68,68,.25);
+  transition:all .2s;
 }
+.btn-reject:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(239,68,68,.35);}
 .btn-changes{
-  background:transparent;color:var(--muted);font-weight:600;
-  border:1px solid var(--border);padding:.6rem 1.5rem;border-radius:8px;cursor:pointer;font-size:.85rem;
+  background:var(--glass);color:var(--muted);font-weight:600;
+  border:1px solid var(--glass-border);
+  padding:.6rem 1.35rem;border-radius:9px;
+  cursor:pointer;font-size:.82rem;
+  transition:all .2s;
 }
+.btn-changes:hover{border-color:var(--gold-border);color:var(--text);}
 .verdict-badge{
-  padding:.5rem 1.25rem;border-radius:8px;font-weight:700;font-size:.85rem;
+  padding:.55rem 1.25rem;border-radius:9px;
+  font-weight:700;font-size:.82rem;
+  font-family:'Fira Code',monospace;letter-spacing:.03em;
 }
-.verdict-badge.approved{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3);}
-.verdict-badge.rejected{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.verdict-badge.approved{
+  background:rgba(16,185,129,.12);color:var(--green);
+  border:1px solid rgba(16,185,129,.3);
+  box-shadow:0 0 20px rgba(16,185,129,.1);
+}
+.verdict-badge.rejected{
+  background:rgba(239,68,68,.12);color:var(--red);
+  border:1px solid rgba(239,68,68,.3);
+  box-shadow:0 0 20px rgba(239,68,68,.1);
+}
+.verdict-badge.changes{
+  background:rgba(245,158,11,.1);color:var(--amber);
+  border:1px solid rgba(245,158,11,.25);
+}
 
-/* EMPTY STATE */
+/* ── EMPTY STATE ─────────────────────────────────────── */
 .empty{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:var(--muted);text-align:center;padding:2rem;gap:.75rem;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  color:var(--muted);text-align:center;padding:3rem;gap:1rem;
 }
-.empty-icon{font-size:3rem;opacity:.4;}
-.empty p{font-size:.9rem;max-width:320px;line-height:1.6;}
+.empty-icon{
+  font-size:3.5rem;opacity:.25;
+  filter:grayscale(1);
+  margin-bottom:.5rem;
+}
+.empty h3{font-size:1rem;font-weight:600;color:rgba(240,244,255,.4);}
+.empty p{font-size:.83rem;max-width:300px;line-height:1.65;color:rgba(107,127,163,.6);}
+.empty-tag{
+  font-family:'Fira Code',monospace;font-size:.7rem;
+  color:var(--gold);opacity:.5;
+  margin-top:.5rem;letter-spacing:.08em;
+}
 </style>
 </head>
 <body>
 
+<!-- Background -->
+<div class="grid-bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- Header -->
 <header>
-  <div class="logo">DealDesk <span>AI</span></div>
-  <div id="status-bar"><div class="dot"></div><span>Band connected</span></div>
-  <a id="band-link" href="#" target="_blank">Open in Band ↗</a>
+  <div class="logo">DealDesk <span class="logo-ai">AI</span></div>
+  <div class="header-tag">M&amp;A Due Diligence · 5-Agent Pipeline</div>
+  <div class="header-right">
+    <div id="status-bar">
+      <div class="status-dot"></div>
+      <span>Band Live</span>
+    </div>
+    <a id="band-link" href="#" target="_blank">band://open ↗</a>
+  </div>
 </header>
 
 <div class="layout">
 
-  <!-- LEFT -->
+  <!-- ── LEFT PANEL ───────────────────────────────────── -->
   <div class="left">
+
     <div class="panel-section">
-      <div class="panel-label">Target Company</div>
+      <div class="panel-label">Target</div>
       <label>Company name</label>
-      <input type="text" id="company" placeholder="e.g. Stripe, Notion, Linear..." />
-      <label>Context (optional)</label>
-      <textarea id="context" placeholder="Funding stage, sector, recent news, valuation..."></textarea>
-      <button class="btn-run" id="btn-run" onclick="startRun()">▶ Run Analysis</button>
+      <input type="text" id="company" placeholder="Stripe, Notion, Linear…" />
+      <label style="margin-top:.75rem;">Context <span style="opacity:.5;">(optional)</span></label>
+      <textarea id="context" placeholder="Funding stage, sector, valuation, recent news…"></textarea>
+      <button class="btn-run" id="btn-run" onclick="startRun()">▶&nbsp;&nbsp;Run Analysis</button>
     </div>
 
     <div class="panel-section">
@@ -212,24 +463,38 @@ label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:.35rem;}
         </div>
       </div>
     </div>
+
+    <div class="panel-section" style="margin-top:auto;border-top:1px solid rgba(255,255,255,.04);border-bottom:none;">
+      <div style="font-size:.68rem;color:var(--muted);line-height:1.8;font-family:'Fira Code',monospace;">
+        <div style="color:var(--gold);margin-bottom:.4rem;letter-spacing:.08em;">TECH STACK</div>
+        Featherless AI · Qwen2.5-72B<br/>
+        Band Agent API · 5 agents<br/>
+        Python · Flask · SSE
+      </div>
+    </div>
+
   </div>
 
-  <!-- RIGHT -->
+  <!-- ── RIGHT PANEL ──────────────────────────────────── -->
   <div class="right">
     <div class="feed" id="feed">
       <div class="empty" id="empty-state">
         <div class="empty-icon">🏦</div>
-        <p>Enter a company name and click <strong>Run Analysis</strong> to start the 5-agent pipeline.</p>
-        <p style="font-size:.8rem;margin-top:.5rem;">Agents will coordinate through Band in real time.</p>
+        <h3>No analysis running</h3>
+        <p>Enter a target company and click <strong>Run Analysis</strong> to deploy the 5-agent pipeline.</p>
+        <div class="empty-tag">@Research → @Risk → @Valuation → @Writer → @HumanReview</div>
       </div>
     </div>
+
+    <!-- Human Review Bar -->
     <div class="review-bar" id="review-bar">
-      <span class="review-label">👤 Human Decision Required:</span>
+      <span class="review-label">Human Decision Required</span>
       <button class="btn-approve" onclick="sendVerdict('APPROVED')">✅ Approve</button>
       <button class="btn-reject" onclick="sendVerdict('REJECTED')">❌ Reject</button>
       <button class="btn-changes" onclick="sendVerdict('CHANGES')">🔄 Request Changes</button>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -240,6 +505,9 @@ const AGENT_CLASS = {
 const STEP_MAP = {
   '@Research':'research','@Risk':'risk',
   '@Valuation':'valuation','@Writer':'writer','@HumanReview':'humanreview'
+};
+const AGENT_ICON = {
+  '@Research':'R','@Risk':'!','@Valuation':'$','@Writer':'W','@HumanReview':'H'
 };
 
 let es = null;
@@ -265,13 +533,15 @@ function addMsg(agent, content){
   if(empty) empty.remove();
 
   const cls = AGENT_CLASS[agent] || 'research';
+  const icon = AGENT_ICON[agent] || '?';
   const isWriter = agent === '@Writer';
-  const rendered = isWriter ? marked.parse(content) : content.replace(/\\n/g,'<br>');
+  const rendered = isWriter ? marked.parse(content) : content.replace(/\\n/g,'<br>').replace(/\\*\\*(.*?)\\*\\*/g,'<strong>$1</strong>');
 
   const el = document.createElement('div');
-  el.className = 'agent-msg';
+  el.className = 'agent-msg ' + cls;
   el.innerHTML = `
     <div class="msg-header">
+      <div class="agent-avatar avatar-${cls}">${icon}</div>
       <span class="msg-agent ${cls}">${agent}</span>
       <span class="msg-time">${now()}</span>
     </div>
@@ -298,14 +568,14 @@ async function startRun(){
   // Clear feed
   document.getElementById('feed').innerHTML = '';
 
-  // Start run
+  // Start pipeline
   await fetch('/api/run', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({company, context})
   });
 
-  // Stream events
+  // Stream SSE events
   if(es) es.close();
   es = new EventSource('/api/stream');
 
@@ -316,7 +586,7 @@ async function startRun(){
       if(data.chat_id){
         const link = document.getElementById('band-link');
         link.href = `https://app.band.ai/chats/${data.chat_id}`;
-        link.textContent = `Open in Band: ${data.chat_id.slice(0,8)}… ↗`;
+        link.textContent = `band://${data.chat_id.slice(0,8)}… ↗`;
       }
     }
 
@@ -348,10 +618,13 @@ async function startRun(){
 
 async function sendVerdict(v){
   const bar = document.getElementById('review-bar');
-  bar.innerHTML = `<span class="verdict-badge ${v==='APPROVED'?'approved':'rejected'}">${
-    v==='APPROVED'?'✅ APPROVED — Memo forwarded to deal team':
-    v==='REJECTED'?'❌ REJECTED':'🔄 Changes Requested'
-  }</span>`;
+  const cls = v==='APPROVED'?'approved':v==='REJECTED'?'rejected':'changes';
+  const label = v==='APPROVED'
+    ? '✅ APPROVED — Forwarding to deal team'
+    : v==='REJECTED'
+    ? '❌ REJECTED — Deal closed'
+    : '🔄 CHANGES REQUESTED';
+  bar.innerHTML = `<span class="verdict-badge ${cls}">${label}</span>`;
 
   await fetch('/api/verdict', {
     method:'POST',
@@ -360,10 +633,9 @@ async function sendVerdict(v){
   });
 
   setStep('@HumanReview','done');
-  addMsg('@HumanReview', v==='APPROVED'
-    ? '✅ **APPROVED** — Investment memo approved. Forwarding to deal team.'
-    : v==='REJECTED'
-    ? '❌ **REJECTED** — Deal rejected.'
+  addMsg('@HumanReview',
+    v==='APPROVED' ? '✅ **APPROVED** — Investment memo approved. Forwarding to deal team.'
+    : v==='REJECTED' ? '❌ **REJECTED** — Deal rejected.'
     : '🔄 **CHANGES REQUESTED** — Memo sent back for revision.'
   );
   document.getElementById('btn-run').disabled = false;
