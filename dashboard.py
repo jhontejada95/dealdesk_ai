@@ -512,6 +512,18 @@ const AGENT_ICON = {
 
 let es = null;
 
+// ── Pendo trackAgent instrumentation ──
+const PENDO_AGENT_ID = 'yohS-UUrQyIQFYod44_L2CHaWko';
+let _pendoConversationId = null;
+let _pendoLastResponseMessageId = null;
+
+function _pendoGenerateId(prefix) {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return prefix + '_' + Date.now();
+}
+
 function now(){
   return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
@@ -568,6 +580,19 @@ async function startRun(){
   // Clear feed
   document.getElementById('feed').innerHTML = '';
 
+  // ── Pendo: track user prompt ──
+  _pendoConversationId = _pendoGenerateId('conv');
+  var promptMessageId = _pendoGenerateId('prompt');
+  if (typeof pendo !== 'undefined' && pendo.trackAgent) {
+    pendo.trackAgent("prompt", {
+      agentId: PENDO_AGENT_ID,
+      conversationId: _pendoConversationId,
+      messageId: promptMessageId,
+      content: context ? company + ' — ' + context : company,
+      suggestedPrompt: false
+    });
+  }
+
   // Start pipeline
   await fetch('/api/run', {
     method:'POST',
@@ -596,6 +621,17 @@ async function startRun(){
 
     if(data.type === 'agent'){
       addMsg(data.agent, data.content);
+      // ── Pendo: track agent response ──
+      _pendoLastResponseMessageId = _pendoGenerateId('agent_response');
+      if (typeof pendo !== 'undefined' && pendo.trackAgent) {
+        pendo.trackAgent("agent_response", {
+          agentId: PENDO_AGENT_ID,
+          conversationId: _pendoConversationId,
+          messageId: _pendoLastResponseMessageId,
+          content: data.content,
+          modelUsed: "Qwen/Qwen2.5-72B-Instruct"
+        });
+      }
     }
 
     if(data.type === 'memo'){
@@ -617,6 +653,17 @@ async function startRun(){
 }
 
 async function sendVerdict(v){
+  // ── Pendo: track user reaction ──
+  var reactionContent = v === 'APPROVED' ? 'positive' : v === 'REJECTED' ? 'negative' : 'mixed';
+  if (typeof pendo !== 'undefined' && pendo.trackAgent) {
+    pendo.trackAgent("user_reaction", {
+      agentId: PENDO_AGENT_ID,
+      conversationId: _pendoConversationId,
+      messageId: _pendoLastResponseMessageId || _pendoGenerateId('reaction'),
+      content: reactionContent
+    });
+  }
+
   const bar = document.getElementById('review-bar');
   const cls = v==='APPROVED'?'approved':v==='REJECTED'?'rejected':'changes';
   const label = v==='APPROVED'
